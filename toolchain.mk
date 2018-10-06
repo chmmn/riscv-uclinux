@@ -7,6 +7,27 @@ ARCH=rv32ima
 ABI=ilp32
 SYSROOT=$(PREFIX)/sysroot
 
+srcs = elf2flt linux uclibc-ng riscv-binutils-gdb riscv-gcc
+srcdirs = $(patsubst %,$(TOPDIR)/src/%,$(srcs))
+
+sources:$(srcdirs)
+	for d in $(srcdirs); do cd "$$d" && git pull; done
+
+$(TOPDIR)/src/elf2flt:
+	cd $(TOPDIR)/src && git clone -b riscv https://github.com/chmmn/elf2flt.git
+
+$(TOPDIR)/src/linux:
+	cd $(TOPDIR)/src && git clone -b riscv https://github.com/chmmn/linux.git
+
+$(TOPDIR)/src/uclibc-ng:
+	cd $(TOPDIR)/src && git clone -b riscv https://github.com/chmmn/uclibc-ng.git
+
+$(TOPDIR)/src/riscv-binutils-gdb:
+	cd $(TOPDIR)/src && git clone https://github.com/riscv/riscv-binutils-gdb.git
+
+$(TOPDIR)/src/riscv-gcc:
+	cd $(TOPDIR)/src && git clone https://github.com/riscv/riscv-gcc.git
+
 binutils_config:
 	-mkdir -p $(TOPDIR)/build/binutils && cd $(TOPDIR)/build/binutils && $(TOPDIR)/src/riscv-binutils-gdb/configure --prefix=$(PREFIX) --target=$(TARGET) --with-sysroot=$(SYSROOT) --disable-multilib --disable-werror --disable-nls --with-expat=yes --disable-gdb
 
@@ -24,7 +45,11 @@ gcc1_build:
 gcc1_install:
 	cd $(TOPDIR)/build/gcc1 && make install
 
-headers:
+headers_config:
+headers_build:
+	echo $@
+
+headers_install:
 	cd $(TOPDIR)/src/linux && make ARCH=riscv CROSS_COMPILE=$(PREFIX)/bin/$(TARGET)- nommu_defconfig && make ARCH=riscv CROSS_COMPILE=$(PREFIX)/bin/$(TARGET)- headers_install INSTALL_HDR_PATH=$(TOPDIR)/src/linux-headers 
 
 uclibc-ng_config:
