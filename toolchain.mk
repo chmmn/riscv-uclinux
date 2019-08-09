@@ -2,9 +2,16 @@
 TOPDIR=$(shell 'pwd')
 
 PREFIX=/opt/riscv-nommu
-TARGET=riscv32-unknown-linux-gnu
-ARCH=rv32ima
-ABI=ilp32
+
+#TARGET=riscv32-unknown-linux-gnu
+#ARCH=rv32ima
+#ABI=ilp32
+#KCONFIG=nommu_32bit_defconfig
+TARGET=riscv64-unknown-linux-gnu
+ARCH=rv64imafdc
+ABI=lp64d
+KCONFIG=nommu_64bit_defconfig
+
 SYSROOT=$(PREFIX)/sysroot
 
 srcs = elf2flt linux uclibc-ng riscv-binutils-gdb riscv-gcc
@@ -50,7 +57,7 @@ headers_build:
 	echo $@
 
 headers_install:
-	cd $(TOPDIR)/src/linux && make ARCH=riscv CROSS_COMPILE=$(PREFIX)/bin/$(TARGET)- nommu_defconfig && make ARCH=riscv CROSS_COMPILE=$(PREFIX)/bin/$(TARGET)- headers_install INSTALL_HDR_PATH=$(TOPDIR)/src/linux-headers 
+	cd $(TOPDIR)/src/linux && make ARCH=riscv CROSS_COMPILE=$(PREFIX)/bin/$(TARGET)- $(KCONFIG) && make ARCH=riscv CROSS_COMPILE=$(PREFIX)/bin/$(TARGET)- headers_install INSTALL_HDR_PATH=$(TOPDIR)/src/linux-headers 
 
 uclibc-ng_config:
 	cp files/uclibc/$(ARCH) $(TOPDIR)/src/uclibc-ng/.config
@@ -77,7 +84,7 @@ gcc2_install:
 
 elf2flt_config:
 	-mkdir -p $(TOPDIR)/build/elf2flt
-	cd $(TOPDIR)/build/elf2flt && $(TOPDIR)/src/elf2flt/configure --target=riscv32-unknown-linux-gnu --with-libbfd=$(TOPDIR)/build/binutils/bfd/libbfd.a --with-libiberty=$(TOPDIR)/build/binutils/libiberty/libiberty.a --with-bfd-include-dir=$(TOPDIR)/build/binutils/bfd/ --with-binutils-include-dir=$(TOPDIR)/src/riscv-binutils-gdb/include
+	cd $(TOPDIR)/build/elf2flt && $(TOPDIR)/src/elf2flt/configure --target=$(TARGET) --with-libbfd=$(TOPDIR)/build/binutils/bfd/libbfd.a --with-libiberty=$(TOPDIR)/build/binutils/libiberty/libiberty.a --with-bfd-include-dir=$(TOPDIR)/build/binutils/bfd/ --with-binutils-include-dir=$(TOPDIR)/src/riscv-binutils-gdb/include
 
 elf2flt_build:
 	cd $(TOPDIR)/build/elf2flt && make
